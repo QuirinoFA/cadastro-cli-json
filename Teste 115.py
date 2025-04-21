@@ -12,7 +12,8 @@ if __name__ == '__main__':
             elif funcao == 'CADASTRO':
                 i_nome = Modulo.valida_nome()
                 i_idade = Modulo.valida_idade()
-                Modulo.cadastro(i_nome, i_idade)
+                i_cpf = Modulo.valida_cpf()
+                Modulo.cadastro(i_nome, i_idade, i_cpf)
             elif funcao == 'SAIR':
                 break
             else:

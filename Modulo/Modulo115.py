@@ -1,6 +1,6 @@
 import json
 
-def cadastro(nome:str, idade:int) -> None:
+def cadastro(nome:str, idade:int, cpf:list) -> None:
     """
     -> Recebe do usuário um nome e uma idade. Cadastra num arquivo .txt no formato JSON
     as informações como ID, Nome e Idade. Caso o banco esteja cheio, (999 IDs) informa
@@ -12,7 +12,14 @@ def cadastro(nome:str, idade:int) -> None:
         with open('Módulo115.txt', mode='r', encoding='utf-8') as f:
             banco = json.load(f)
             if len(banco) < 999:
-                banco.append({'ID':999-len(banco),'Nome':nome,'Idade':idade})
+                count = 0
+                for valor in banco:
+                    if valor['CPF'] == cpf:
+                        count += 1
+                if count == 0:
+                    banco.append({'ID':999-len(banco),'Nome':nome,'Idade':idade, 'CPF':cpf})
+                else:
+                    print('ERRO! CPF já cadastrado no banco!')
             else:
                 print("BANCO CHEIO! Pessoa não cadastrada.")
                 return
@@ -20,7 +27,8 @@ def cadastro(nome:str, idade:int) -> None:
         banco = [{
             'ID':999,
             'Nome':nome,
-            'Idade':idade
+            'Idade':idade,
+            'CPF':cpf
         }]
     with open('Módulo115.txt', mode='w', encoding='utf-8') as f:
         json.dump(banco, f, ensure_ascii=False,allow_nan=False, indent=4)
@@ -98,3 +106,57 @@ def valida_idade() ->int:
         except Exception as e:
             print(f'ERRO! erro inexperado: {e}')
     return input_idade
+
+def captura_cpf() -> list:
+    """
+    -> Recebe um CPF do usuário, checa se possuí tamanho adequado, ajustando caso
+    possível e confere se possuí caracteres que invalidam o CPF. Retorna uma
+    lista com os números ajustados do CPF pronto para a conferência de validade.
+    return: Retorna uma lista com os números do CPF limpo como elementos.
+    """
+    while True:
+        cpf_usuario = str(input('Digite o CPF da pessoa: ')).strip()
+        cpf_usuario = cpf_usuario.replace('.', '')
+        cpf_usuario = cpf_usuario.replace('-', '')
+        if len(cpf_usuario) > 11:
+            print('ERRO! CPF precisa ter apenas 11 caracteres!')
+        elif len(cpf_usuario) < 11:
+            while len(cpf_usuario) < 11:
+                cpf_usuario = '0' + cpf_usuario
+        try:
+            if len(cpf_usuario) == 11:
+                cpf_limpo = []
+                for c in cpf_usuario:
+                    cpf_limpo.append(int(c))
+                return cpf_limpo
+        except ValueError:
+            print('ERRO! CPF só pode conter números!')
+        except Exception as e:
+            print(f'ERRO! Erro desconhecido {e}')
+
+def valida_cpf () -> list:
+    """
+    -> Função recebe um cpf na forma de LISTA usando uma outra função para
+    limpar a entrada do usuário e verifica se o cpf digitado é válido ou não.
+    Para de pedir ao usuário após receber um cpf válido.
+    return: Retorna um cpf válido para cadastro.
+    """
+    while True:
+        cpf_l = captura_cpf()
+        cpf_num_1 = [cpf_l[m] * int(n) for m, n in enumerate(range(10, 1, -1))]
+        if (11 - (sum(cpf_num_1) % 11)) <= 1:
+            num_1 = 0
+        else:
+            num_1 = (11 - (sum(cpf_num_1) % 11))
+        if cpf_l[9] == num_1:
+            cpf_num_2 = [cpf_l[m] * int(n) for m, n in enumerate(range(11, 1, -1))]
+            if (11 - (sum(cpf_num_2) % 11)) <= 1:
+                num_2 = 0
+            else:
+                num_2 = (11 - (sum(cpf_num_2) % 11))
+            if cpf_l[10] == num_2:
+                return cpf_l
+            else:
+                print('ERRO! CPF inválido! Digite um CPF válido!')
+        else:
+            print('ERRO! CPF inválido! Digite um CPF válido!')
